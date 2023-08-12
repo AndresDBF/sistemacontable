@@ -69,17 +69,14 @@ class ProyectGastController extends Controller
     }
 
     public function createproyectgast(){
-        $sysdate = Carbon::now(); // Obtener la fecha actual
+        $sysdate = Carbon::now();
+        $threeMonthsAgo = $sysdate->copy()->subMonths(3);
 
-        // Obtener el primer día del mes
-        $monthIni = $sysdate->startOfMonth()->format('Y-m-d');
-
-        // Obtener el último día del mes
-        $monthFin = $sysdate->endOfMonth()->format('Y-m-d');
         $seats = Asiento::select('monto_deb')
-                        ->whereBetween('fec_asi',[$monthIni,$monthFin])
-                        ->whereBetween('idcta1',[4,16])
+                        ->whereBetween('fec_asi', [$threeMonthsAgo->format('Y-m-d'), $sysdate->format('Y-m-d')])
+                        ->whereBetween('idcta1', [4,16])
                         ->sum('monto_deb');
+
         $fecstsini = Carbon::now()->toDateString();
         $fecstsfin = Carbon::now()->addDays(15)->toDateString();
 

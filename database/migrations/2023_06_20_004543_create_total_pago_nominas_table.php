@@ -26,6 +26,7 @@ class CreateTotalPagoNominasTable extends Migration
             $table->float('totalasignacion',14,2);
             $table->float('totaldeduccion',14,2);
             $table->float('netocobrar',14,2);
+            $table->date('fecpag')->format('Y-m-d');
             $table->timestamps();
         });
     }

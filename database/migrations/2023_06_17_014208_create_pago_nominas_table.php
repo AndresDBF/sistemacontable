@@ -21,6 +21,7 @@ class CreatePagoNominasTable extends Migration
                   ->on('nominas');
             $table->string('concepto_pago');
             $table->float('montopago',14,2);
+            $table->string('diast');
             $table->date('fecpag')->format('Y-m-d');
             $table->timestamps();
         });

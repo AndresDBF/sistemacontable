@@ -207,14 +207,31 @@ class PayrollController extends Controller
     }
 
     public function payemployee($idnom){
-        $employee = Nomina::find($idnom);
-        $valueHed = ValoresNomina::where('idval',2)->first();
-        $valueVh = ValoresNomina::where('idval',1)->first();
-        $valueFes = ValoresNomina::where('idval',3)->first();
-        $valueHen = ValoresNomina::where('idval',4)->first();
-        $valueCes = ValoresNomina::where('idval',5)->first();
-        $money = Moneda::all();
-        return view('payroll.pay',compact('valueHed','employee','valueVh','valueFes','valueHen','valueCes','money','idnom'));
+        $sysdate = Carbon::now();
+        $threeMonthsAgo = $sysdate->copy()->subMonths(3);
+
+        $seats = Asiento::select('monto_deb')
+                        ->whereBetween('fec_asi', [$threeMonthsAgo->format('Y-m-d'), $sysdate->format('Y-m-d')])
+                        ->whereBetween('idcta1', [4,16])
+                        ->sum('monto_deb');
+
+        
+                       
+        if ($seats > 200) {
+
+            $employee = Nomina::find($idnom);
+            $valueHed = ValoresNomina::where('idval',2)->first();
+            $valueVh = ValoresNomina::where('idval',1)->first();
+            $valueFes = ValoresNomina::where('idval',3)->first();
+            $valueHen = ValoresNomina::where('idval',4)->first();
+            $valueCes = ValoresNomina::where('idval',5)->first();
+            $money = Moneda::all();
+            return view('payroll.pay',compact('valueHed','employee','valueVh','valueFes','valueHen','valueCes','money','idnom'));
+        }else {
+            Session::flash('error','no cuenta con suficientes ingresos');
+            return redirect('payroll');
+        }
+
     }
 
     public function storepayemployee(Request $request){
@@ -222,8 +239,7 @@ class PayrollController extends Controller
             'dayst' => 'required',
             'incent' => 'required'
         ]);
-      
-        
+                
         if (strlen($request->get('money')) > 3) {
             Session::flash('error','debe seleccionar un tipo de moneda para el incentivo');
             return redirect()->route('payemployee',intval($request->get('idnom')));
@@ -370,8 +386,6 @@ class PayrollController extends Controller
                     $seatAmount->monto_hab = floatval($request->get('incent'));
                     break; 
             }
-            $seatAmount->monto_deb = floatval($request->get('incent') * $request->get('tasa_cambio'));
-            $seatAmount->monto_hab = floatval($request->get('incent') * $request->get('tasa_cambio'));
             $seatAmount->save();
         }
 

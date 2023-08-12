@@ -201,20 +201,21 @@
                 @php
                     $countFiles = 1;
                 @endphp
-                <tr>
+               
                     @foreach ($amountOrder as $order)
-                        
+                    <tr>  
                     
                     <td>{{$countFiles}}</td>
                     <td>{{$order->descripcion}}</td>
                     <td>{{$order->montounitariolocal}}</td>
                     <td>{{$order->montobienlocal}}</td>
                     
-                    </tr>
+                    
 
                     @php
                         $countFiles = $countFiles + 1;
                     @endphp
+                    </tr>
                 @endforeach
             </tbody>
         </table>

@@ -265,6 +265,7 @@ class PayOrderController extends Controller
         }
         else {
             for ($i=0; $i < $numConcept; $i++) { 
+               
                 if ($request->get("amountUnit_" . $i) == null) {
                     Session::flash('error','Debe ingresar el monto en el concepto de la factura');
                     return redirect()->route('detorder',['numConcept' => intval($request->get('numconcept')), 'tasa' => floatval($request->get('tasa'))]);
@@ -315,11 +316,12 @@ class PayOrderController extends Controller
                     $conceptOrder->montobienmoneda = $amountTot;
                     $conceptOrder->save();
                 }
-                
-    
+            }   
+            $conceptOrdensBienlocal = ConceptoOrden::where('idorpa',intval($request->get('idorpa')))->sum('montobienlocal');
+            $conceptOrdensBienmoneda = ConceptoOrden::where('idorpa',intval($request->get('idorpa')))->sum('montobienmoneda');
                 if ($request->get('iva') == 'S') {
-                    $taxeslocal =  $conceptOrder->montobienlocal * 0.16;
-                    $taxesmoneda =  $conceptOrder->montobienmoneda * 0.16;
+                    $taxeslocal =  $conceptOrdensBienlocal * 0.16;
+                    $taxesmoneda =  $conceptOrdensBienmoneda * 0.16;
                 }else {
                     $taxeslocal =  0;
                     $taxesmoneda =  0;
@@ -327,8 +329,8 @@ class PayOrderController extends Controller
                 
                
     
-                $amountTotlocal = $taxeslocal + $conceptOrder->montobienlocal;
-                $amountTotmoneda = $taxesmoneda + $conceptOrder->montobienmoneda;
+                $amountTotlocal = $taxeslocal + $conceptOrdensBienlocal;
+                $amountTotmoneda = $taxesmoneda + $conceptOrdensBienmoneda;
     
                 if ($request->get('money') != 'BS') {
                     $igtflocal = $amountTotlocal * 0.03;
@@ -351,15 +353,16 @@ class PayOrderController extends Controller
                 $detOrder = new DetalleOrdenPago();
                 $detOrder->idorpa = $request->get('idorpa');
                 $detOrder->idcon = $conceptOrder->idcon;
-                $detOrder->baseimponiblelocal = $conceptOrder->montobienlocal;
-                $detOrder->baseimponiblemoneda = $conceptOrder->montobienmoneda;
+                $detOrder->indiva = $request->get('iva');
+                $detOrder->baseimponiblelocal = $conceptOrdensBienlocal;
+                $detOrder->baseimponiblemoneda = $conceptOrdensBienmoneda;
                 $detOrder->montoivalocal = $taxeslocal;
                 $detOrder->montoivamoneda = $taxesmoneda;
                 $detOrder->montototallocal = $totpayorderlocal;
                 $detOrder->montototalmoneda = $totpayordermoneda;
                 $detOrder->save();
                 $idorpa = $detOrder->idorpa;
-            }
+            
         }
         
         return redirect()->route('totalorderpa', ['idorpa' => $idorpa]);
@@ -392,10 +395,14 @@ class PayOrderController extends Controller
     }
     public function deleteorderpa($idprov,$idorco){
        $payOrder = OrdenPago::where('idorco',$idorco)->delete();
-       return redirect()->route('create',['idprov' => $idprov, 'idorco' => $idorco]);
+       return redirect()->route('createpayorder',['idprov' => $idprov, 'idorco' => $idorco]);
     }
 
     public function deletedetorderpa($idorpa){
+        $detailorder = DetalleOrdenPago::where('idorpa',$idorpa)->first();
+        $proyeccionGasto = ProyeccionGasto::orderBy('fecstsfin', 'asc')->first();
+        $proyeccionGasto->presupuesto = $detailorder->sum('montototallocal');
+        $proyeccionGasto->save();
         $detailorder = DetalleOrdenPago::where('idorpa',$idorpa)->delete();
         $conceptpayorder = ConceptoOrden::where('idorpa',$idorpa)->delete();
 

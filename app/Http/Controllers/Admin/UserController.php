@@ -13,8 +13,8 @@ class UserController extends Controller
     {
         //utilizado para restriccion de rutas
         $this->middleware('can:users.index')->only('index'); //solo se aplicara al metodo index
-        $this->middleware('can:users.edit')->only('edit');
-        $this->middleware('can:users.update')->only('update');
+        $this->middleware('can:users.edit')->only('edit','update');
+
     }
     public function index()
     {
@@ -33,6 +33,7 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
+
         $user = User::where('id',intval($id))->first();
         $user->roles()->sync($request->roles);
 

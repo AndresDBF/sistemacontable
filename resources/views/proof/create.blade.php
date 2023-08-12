@@ -3,7 +3,7 @@
 @section('title', 'Comprobante de Ingreso')
 
 @section('content_header')
-    <h1 class="fw-bolder">Comprobante de Ingreso</h1>
+    <h1 class="fw-bolder">Recibo de Pago</h1>
 @stop
 
 @section('content')
@@ -82,7 +82,7 @@
 
 <div class="card">
     <div class="card-body pl-6">
-        <h3 class="text-center fw-bolder">Comprobante de Ingreso</h3>
+        <h3 class="text-center fw-bolder">Comprobante de Pago</h3>
         <form action="{{route('storeproof')}}" method="POST" id="myform">
             @csrf
             <input type="text" name="idfact" value="{{$valueIdfact}}" hidden="true">
